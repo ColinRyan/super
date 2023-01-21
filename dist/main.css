@@ -1,0 +1,33 @@
+html,body {
+    font-size: 26px;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin:0;
+}
+
+aside {
+    height: 100%;
+    width: 10em;
+    box-shadow: 1px 1px 1px 1px;
+}
+
+#share {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    height: 3em;
+}
+
+main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+body {
+    display:flex;
+    flex-direction: row;
+}

@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <title>esbuild starter</title>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="#" />
+    <link  rel="stylesheet" type="text/css" href="./main.css" />
+
+
+    <script type="module" src="./index.js"></script>
+  </head>
+  <body>
+      <aside>
+          <div id="share">
+              <span >Share link:
+                  <span id="share-id">
+
+                  </span>
+
+              </span>
+              <button id="share-copy">Copy</button>
+          </div>
+          <div id="users">
+              
+
+          </div>
+
+      </aside>
+      <main id="content">
+    
+          
+          
+
+      </main>
+        <dialog id="host-info-dialog">
+          <form method="dialog">
+                  <label for="name">name:
+                      <input name="name" type="text"/>
+                  </label>
+                  <input checked type="checkbox" id="host" name="category"
+                                                value="host"
+                                                hidden/>
+                  
+              <div>
+                  <button id="host-info-dialog-confirm" value="default">Confirm</button>
+              </div>
+          </form>
+      </dialog>
+      <dialog id="user-info-dialog">
+          <form method="dialog">
+                  <label for="name">name:
+                      <input name="name" type="text"/>
+                  </label>
+                  <fieldset>
+                      <legend>Category</legend>
+
+
+                      <div>
+                          <input type="radio" id="spectator" name="category"
+                                                             value="spectator"/>
+                          <label for="category">Spectator</label>
+
+                      </div>
+                      <div>
+                          <input type="radio" id="qc" name="category" value="qc"/>
+                          <label for="category">QC</label>
+
+                      </div>
+                      <div>
+                          <input type="radio" id="dev" name="category" value="dev"/>
+                          <label for="category">Dev</label>
+
+                      </div>
+                  </fieldset>
+              <div>
+                  <button id="user-info-dialog-confirm" value="default">Confirm</button>
+              </div>
+          </form>
+      </dialog>
+  </body>
+</html>
+
