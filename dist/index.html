@@ -27,12 +27,37 @@
 
       </aside>
       <main id="content">
-    
-          
-          
+          <section id="host-waiting-on-players" class="hidden"
+              name="host-loading">
+              Waiting for users to connect...
+          </section>
+          <section id="players-waiting-to-connect" class="hidden"
+              name="players-loading">
+              Connecting
+          </section>
+          <section id="storypointing" class="hidden" name="story-pointing" >
+              <div id="results" name="results">
 
+              </div>
+              <ul>
+                  <li><input type="button" value="1"/></li>
+                  <li><input type="button" value="2"/></li>
+                  <li><input type="button" value="3"/></li>
+                  <li><input type="button" value="5"/></li>
+                  <li><input type="button" value="8"/></li>
+                  <li><input type="button" value="13"/></li>
+                  <li><input type="button" value="21"/></li>
+                  <li><input type="button" value="??"/></li>
+                  <li><input type="button" value="coffee cup"/></li>
+              </ul>
+              <input id="storypointing-reveal" name="reveal" type="button"
+              value="reveal" class="hidden"/>
+              <input id="storypointing-restart" name="restart" type="button"
+                                                             value="restart" class="hidden"/>
+
+          </section>
       </main>
-        <dialog id="host-info-dialog">
+      <dialog id="host-info-dialog">
           <form method="dialog">
                   <label for="name">name:
                       <input name="name" type="text"/>

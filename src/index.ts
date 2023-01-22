@@ -1,5 +1,5 @@
 // # Imports
-import {map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
+import {omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
 import {Peer} from 'peerjs'
 
 
@@ -12,17 +12,21 @@ const peer = new Peer()
 
 const userDialog = document.getElementById("user-info-dialog")
 const hostDialog = document.getElementById("host-info-dialog")
-
 const userList = document.getElementById("users")
 
 
 // # Local State
 
 const state = {
+    host: {
+        conn: null
+
+    },
     me: {
 
     },
-    elements : {
+    el: {
+        main: document.getElementById("content")
 
     }, 
     connections: {
@@ -31,11 +35,149 @@ const state = {
     users : {
 
     }, 
+    game: {
+        type: "story-pointing"
+
+    },
+    matches: [
+
+    ],
+
+
     
     
 }
 
+window.state = state
+window.main = state.el.main
+
+state.el.main.addEventListener('click', (event) => {
+  const el = event.target
+  if (el.type !== "button") {
+      return
+  }
+
+    if (el.name === "restart") {
+        console.debug("restart game")
+
+
+        el.classList.toggle("hidden")
+        state.el.main.children[state.game.type].children["reveal"].classList.toggle("hidden")
+        state.el.main.children[state.game.type].children["results"].innerHTML = ""
+
+
+        state.users = map((user) => {
+            return omit(["voted", "vote" ], user)
+        }, state.users)
+
+        state.me = omit(["voted", "vote"], state.me)
+        listUsers()
+        forEach((conn) => {
+            console.debug("time to reveal all votes")
+            conn.send({action: 'restart_game', payload: true})
+            conn.send({action: 'refresh_users', payload: state.users})
+
+        }, values(state.connections))
+
+        return
+
+    }
+
+  if (el.name === "reveal") {
+      console.debug("reveal something")
+      state.users[state.me.name].vote = state.me.vote
+      el.classList.toggle("hidden")
+      state.el.main.children[state.game.type].children["restart"].classList.toggle("hidden")
+      forEach((conn) => {
+          console.debug("time to reveal all votes")
+          conn.send({action: 'reveal_vote', payload: true})
+      }, values(state.connections))
+
+      return
+      
+  }
+
+  state.me.voted = true
+  state.me.vote  = el.value
+
+  console.debug("state.me", state.me)
+  if (state.me.category !== "host") {
+      state.host.conn.send({action: "user_voted", payload: {name: state.me.name}})
+  }
+  else {
+
+      state.users[state.me.name].voted = true
+
+      listUsers()
+
+      forEach((conn) => {
+          console.debug("send user list to all players")
+          console.debug("conn", conn)
+          conn.send({action: 'refresh_users', payload: state.users})
+      }, values(state.connections))
+
+
+  }
+
+ 
+
+})
+
 // # Funcs
+
+const showResults = (votes, average) => {
+    const main = state.el.main
+    const game = main.children[state.game.type]
+    const results = game.children.results
+   
+
+    results.append(`average: ${average}`)
+    results.append(`votes: ${votes}`)
+
+
+}
+
+const revealVotes =  () => {
+   const votes = map((user) => {
+       return user.vote
+   }, values(state.users))
+
+    const average = sum(votes)/votes.length 
+
+    showResults(votes, average)
+    forEach((conn) => {
+        console.debug("send user list to all players")
+        console.debug("conn", conn)
+        conn.send({action: 'show_results', payload: {
+            votes,
+            average
+        }})
+    }, values(state.connections))
+
+
+
+}
+
+
+const initalizeGame = () => {
+
+    const main = state.el.main
+    forEach((el) => {
+       el.classList.add("hidden")
+    
+    },main.children)
+
+    const game = main.children[state.game.type]
+    game.classList.toggle("hidden")
+
+    if (state.me.category === "host") {
+        game.children["reveal"].classList.toggle("hidden")
+        
+    }
+
+
+
+} 
 
 const listUsers = () => {
     
@@ -57,7 +199,7 @@ const listUsers = () => {
 
             const listItems = map((user) => {
                 const li = document.createElement("li")
-                li.innerText = user.details.name
+                li.innerText = `${user.details.name}${user.voted ? " (voted)": ""}`
                 return li
             }, users)
             
@@ -87,6 +229,7 @@ peer.on('open', (id) => {
 
 
     const hostId = params.hostId; 
+    const main = state.el.main
 
     console.debug(`My peer ID is ${id}` )
 
@@ -96,18 +239,18 @@ peer.on('open', (id) => {
     })
 
 
-    const main = document.getElementById("content")
     if (hostId) {
         // You aren't the host
-        main.innerHTML =  "Connecting..."
+        main.children["players-loading"].classList.toggle("hidden")
     } else {
         // You are the host
         const user = JSON.parse(localStorage.getItem("host"))
         if (user) {
-            state.users[user.name] = { details: user }
+            state.users[user.name] = { voted: false, details: user }
             state.me = user
             listUsers()
-            main.innerHTML = "Waiting for users to connect..."
+            console.debug("main", main)
+            main.children["host-loading"].classList.toggle("hidden")
 
 
         }
@@ -125,11 +268,12 @@ peer.on('open', (id) => {
 
                     localStorage.setItem("host", JSON.stringify(user))
 
-                    state.users[user.name] = { details: user }
+                    state.users[user.name] = { voted: false, details: user }
                     state.me = user
 
 
-                    main.innerHTML = "Waiting for users to connect..."
+                    main.children["host-loading"].classList.toggle("hidden")
+
 
 
                     listUsers()
@@ -174,9 +318,46 @@ peer.on('open', (id) => {
                         listUsers()
                         break;
 
+                    case "reveal_vote":
+                        console.debug("Counting votes")
+
+                        state.users[payload.name].vote = payload.vote
+                        const voteCountExpected = mapAccum((acc, user) => {
+                            const voted = user.voted ? 1: 0
+                            return [acc + voted, voted]
+                        }, 0, values(state.users))
+                        console.debug("voteCountExpected", voteCountExpected)
+
+                        const voteCountActual = mapAccum((acc, user) => {
+                            const vote = user.vote ? 1: 0
+                            return [acc + vote, vote]
+
+
+                        }, 0, values(state.users))
+
+                        if (voteCountActual[0] === voteCountExpected[0]) {
+                           revealVotes() 
+                        }
+
+
+                        break
+                    case "user_voted":
+                        console.debug("new user added to host!", payload)
+                        state.users[payload.name].voted = true
+
+                        forEach((conn) => {
+                            console.debug("send user list to all players")
+                            console.debug("conn", conn)
+                            conn.send({action: 'refresh_users', payload: state.users})
+                        }, values(state.connections))
+
+
+                        listUsers()
+                        break
+
                     case "add_user":
                         console.debug("new user added to host!", payload)
-                        state.users[payload.name] = { details: payload}
+                        state.users[payload.name] = { voted: false, details: payload}
                         state.connections[payload.name] = conn
 
                         forEach((conn) => {
@@ -185,6 +366,12 @@ peer.on('open', (id) => {
                             conn.send({action: 'refresh_users', payload: state.users})
                         }, values(state.connections))
 
+                        conn.send({action: 'initalize_game', payload: state.game})
+
+                        if (values(state.users).length > 1) {
+                            initalizeGame()
+                            
+                        }
 
                         listUsers()
                         break
@@ -207,6 +394,7 @@ peer.on('open', (id) => {
     // connect to host
     if (hostId) {
         const conn = peer.connect(hostId);
+        state.host.conn = conn
         console.debug("conn", conn)
         console.debug("hostId", hostId)
 
@@ -267,10 +455,32 @@ peer.on('open', (id) => {
                         listUsers()
                         break
 
+                    case "show_results":
+
+                        showResults(payload.votes, payload.average)
+                        break
+
+
+                    case "restart_game":
+                        state.me = omit(["votes", "vote"], state.me)
+                        state.el.main.children[state.game.type].children["results"].innerHTML = ""
+
+                        break
+                    case "reveal_vote":
+
+                        conn.send({action: "reveal_vote", payload: {
+                            name: state.me.name,
+                            vote: state.me.vote
+                        }})
+                        break
                     case "add_user":
                         console.debug("new user!", payload)
-                        state.users[payload.name] = { details: payload }
+                        state.users[payload.name] = { voted: false, details: payload }
                         listUsers()
+                        break
+                    case "initalize_game":
+                        state.game.type = payload.type
+                        initalizeGame()
                         break
                     default:
                         console.log("default")
