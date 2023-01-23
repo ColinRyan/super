@@ -133,7 +133,7 @@ const showResults = (votes, average) => {
    
 
     results.append(`average: ${average}`)
-    results.append(`votes: ${votes}`)
+    results.append(`  votes: ${votes}`)
 
 
 }

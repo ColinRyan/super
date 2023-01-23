@@ -121,6 +121,9 @@ canvas {
 
 section {
 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     backdrop-filter: blur(5px);
     padding: 1rem;
     box-shadow: 2px 2px 27px -2px green;
@@ -191,3 +194,38 @@ section#storypointing > ul {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
 }
+
+
+input#storypointing-reveal {
+    width: calc(100% - 2rem);
+    height: 3rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+    border: none;
+    border-radius: 10px;
+}
+input#storypointing-reveal:hover {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
+input#storypointing-restart {
+    width: calc(100% - 2rem);
+    height: 3rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+    border: none;
+    border-radius: 10px;
+}
+
+input#storypointing-restart:hover {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
