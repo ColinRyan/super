@@ -8475,7 +8475,7 @@
     console.debug(`My peer ID is ${id}`);
     const shareButton = document.getElementById("share-copy");
     shareButton.addEventListener("click", (event) => {
-      navigator.clipboard.writeText(`${location.origin}?hostId=${id}`);
+      navigator.clipboard.writeText(`${location.href}?hostId=${id}`);
     });
     if (hostId) {
     } else {
