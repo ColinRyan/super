@@ -6,10 +6,29 @@ html,body {
     margin:0;
 }
 
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: black;
+  color: white;
+}
+
 aside {
     height: 100%;
-    width: 10em;
-    box-shadow: 1px 1px 1px 1px;
+    width: 20vw;
+    box-shadow: 2px 2px 27px -2px green;
+
+    z-index: 1;
+    backdrop-filter: blur(5px);
+    animation: slideIn 2s;
+
+}
+
+aside > div {
+    animation: fadeIn2 2s;
+
+
 }
 
 #share {
@@ -17,15 +36,40 @@ aside {
     justify-content: center;
     align-items: center;
     border-bottom: 1px solid #333;
-    height: 3em;
+    height: 4rem;
 }
+#share-copy {
+    width: 100%;
+    height: 100%;
+    border-radius: 0%;
+    border: none;
+    background: rgba(3,3,3,.1);
+    color: white;
+    font-size: 26px;
+    transition: background 0.5s;
+}
+
+#share-copy:hover {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+}
+#share-copy:active {
+    padding-top: 7px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 1s, font-weight 1s;
+
+}
+
 
 main {
     width: 100%;
+    top: 0;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1;
 }
 body {
     display:flex;
@@ -34,5 +78,116 @@ body {
 
 .hidden {
     display:none;
+    opacity: 0;
+}
 
+
+canvas {
+    position: absolute;
+}
+
+
+@-webkit-keyframes slideIn {
+    from { width: 0; }
+    to { width: 20vw; }
+}
+@keyframes slideIn {
+    from { width: 0; }
+    to { width: 20vw; }
+}
+
+
+@-webkit-keyframes fadeIn2 {
+    0% { opacity: 0; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes fadeIn2 {
+    0% { opacity: 0; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+
+
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+}
+
+section {
+
+    backdrop-filter: blur(5px);
+    padding: 1rem;
+    box-shadow: 2px 2px 27px -2px green;
+    border-radius: 25px;
+    opacity: 1;
+    animation: fadeIn 3s;
+
+
+
+}
+
+
+ul {
+    list-style: none;
+    padding:0;
+}
+
+figure {
+
+    font-size: 30px;
+    margin: 0;
+}
+
+figure > ul {
+    border-bottom: 1px solid #333;
+    padding-bottom: 1rem;
+
+
+}
+
+#users {
+    margin-top: 1rem;
+    font-size: 32px;
+    text-align: center;
+
+}
+input[type="button"].option {
+    width: 5rem;
+    height: 5rem;
+    border: none;
+    border-radius: 10px;
+    margin: 1rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+
+}
+
+input[type="button"].option:hover  {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
+input[type="button"].option:focus  {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    padding-top: 7px;
+
+    box-shadow: 1px 3px 8px 1px green;
+
+    color: white;
+}
+
+
+section#storypointing > ul {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
 }

@@ -1,4 +1,5 @@
 // # Imports
+
 import {omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
 import {Peer} from 'peerjs'
 
@@ -199,7 +200,7 @@ const listUsers = () => {
 
             const listItems = map((user) => {
                 const li = document.createElement("li")
-                li.innerText = `${user.details.name}${user.voted ? " (voted)": ""}`
+                li.innerText = `${user.details.name}${user.voted ? " 🗹": " ☐"}`
                 return li
             }, users)
             
@@ -505,5 +506,3 @@ peer.on('open', (id) => {
 
 
 })
-
-
