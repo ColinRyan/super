@@ -28,10 +28,7 @@
               name="host-loading">
               Waiting for users to connect...
           </section>
-          <section id="players-waiting-to-connect" class="hidden"
-              name="players-loading">
-              Connecting
-          </section>
+          
           <section id="storypointing" class="hidden" name="story-pointing" >
               <div id="results" name="results">
 
@@ -57,7 +54,7 @@
       <dialog id="host-info-dialog">
           <form method="dialog">
                   <label for="name">name:
-                      <input name="name" type="text"/>
+                      <input name="name" type="text" required/>
                   </label>
                   <input checked type="checkbox" id="host" name="category"
                                                 value="host"
@@ -71,7 +68,7 @@
       <dialog id="user-info-dialog">
           <form method="dialog">
                   <label for="name">name:
-                      <input name="name" type="text"/>
+                      <input name="name" type="text" required/>
                   </label>
                   <fieldset>
                       <legend>Category</legend>
@@ -89,7 +86,7 @@
 
                       </div>
                       <div>
-                          <input type="radio" id="dev" name="category" value="dev"/>
+                          <input type="radio" id="dev" name="category" checked value="dev"/>
                           <label for="category">Dev</label>
 
                       </div>

@@ -242,7 +242,7 @@ peer.on('open', (id) => {
 
     if (hostId) {
         // You aren't the host
-        main.children["players-loading"].classList.toggle("hidden")
+        // main.children["players-loading"].classList.toggle("hidden")
     } else {
         // You are the host
         const user = JSON.parse(localStorage.getItem("host"))
