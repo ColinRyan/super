@@ -4,6 +4,7 @@ import {pipe, filter, omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, 
 import {Peer} from 'peerjs'
 
 
+
 const params = new Proxy(new URLSearchParams(window.location.search), {
   get: (searchParams, prop) => searchParams.get(prop),
 });
@@ -56,11 +57,25 @@ const state = {
     matches: [
 
     ],
+    theme: {
+        name: "migration",
+        tearDown: () => null
+    }
 
 
     
     
 }
+
+console.debug("state.theme.name", state.theme.name)
+console.debug("theme", `./themes/${state.theme.name}`)
+// set the theme
+import(`./themes/migration`).then((obj) => {
+    console.debug("obj", obj)
+    state.theme.tearDown = obj.tearDown
+}).catch((err) => {
+    console.error(err)
+});
 
 window.state = state
 window.main = state.el.main
