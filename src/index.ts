@@ -1,6 +1,6 @@
 // # Imports
 
-import {omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
+import {pipe, filter, omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
 import {Peer} from 'peerjs'
 
 
@@ -16,12 +16,24 @@ const hostDialog = document.getElementById("host-info-dialog")
 const userList = document.getElementById("users")
 
 
+// # Types
+
+enum GameTypes {
+    storyPointing = 'story-pointing',
+    tshirtSizing = 't-shirt-sizing',
+
+}
+enum GameModes {
+    reveal = 'reveal',
+    play = 'play',
+    wait = 'wait', 
+}
+
 // # Local State
 
 const state = {
     host: {
         conn: null
-
     },
     me: {
 
@@ -37,7 +49,8 @@ const state = {
 
     }, 
     game: {
-        type: "story-pointing"
+        type: GameTypes.storyPointing,
+        mode: GameModes.wait
 
     },
     matches: [
@@ -80,6 +93,9 @@ state.el.main.addEventListener('click', (event) => {
 
         }, values(state.connections))
 
+        state.game.mode = GameModes.play
+
+
         return
 
     }
@@ -93,6 +109,8 @@ state.el.main.addEventListener('click', (event) => {
           console.debug("time to reveal all votes")
           conn.send({action: 'reveal_vote', payload: true})
       }, values(state.connections))
+
+      state.game.mode = GameModes.reveal
 
       return
       
@@ -132,17 +150,24 @@ const showResults = (votes, average) => {
     const results = game.children.results
    
 
-    results.append(`average: ${average}`)
+    results.append(`average: ${average.toFixed(2)}`)
     results.append(`  votes: ${votes}`)
 
 
 }
 
 const revealVotes =  () => {
-   const votes = map((user) => {
-       return user.vote
-   }, values(state.users))
+    const votes = pipe(
 
+        filter((user) => {
+            return user.vote !== null
+        }),
+        map((user) => {
+            return user.vote
+        })
+   )(values(state.users))
+
+    console.debug("votes", votes)
     const average = sum(votes)/votes.length 
 
     showResults(votes, average)
@@ -155,9 +180,12 @@ const revealVotes =  () => {
         }})
     }, values(state.connections))
 
+    state.game.mode = GameModes.reveal
+
 
 
 }
+
 
 
 const initalizeGame = () => {
@@ -172,9 +200,11 @@ const initalizeGame = () => {
     game.classList.toggle("hidden")
 
     if (state.me.category === "host") {
-        game.children["reveal"].classList.toggle("hidden")
-        
+        console.debug("test")
+        game.children["reveal"].classList.remove("hidden")
     }
+
+    state.game.mode = GameModes.play
 
 
 
@@ -369,7 +399,7 @@ peer.on('open', (id) => {
 
                         conn.send({action: 'initalize_game', payload: state.game})
 
-                        if (values(state.users).length > 1) {
+                        if (values(state.users).length > 1 && state.game.mode === GameModes.wait) {
                             initalizeGame()
                             
                         }
