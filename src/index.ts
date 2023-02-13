@@ -19,6 +19,14 @@ const userList = document.getElementById("users")
 
 // # Types
 
+enum Themes {
+    minimalist = 'minimalist',
+    migration = 'migration',
+    waves = 'waves',
+
+
+}
+
 enum GameTypes {
     storyPointing = 'story-pointing',
     tshirtSizing = 't-shirt-sizing',
@@ -58,7 +66,7 @@ const state = {
 
     ],
     theme: {
-        name: "migration",
+        name: Themes.minimalist,
         tearDown: () => null
     }
 
@@ -67,15 +75,6 @@ const state = {
     
 }
 
-console.debug("state.theme.name", state.theme.name)
-console.debug("theme", `./themes/${state.theme.name}`)
-// set the theme
-import(`./themes/migration`).then((obj) => {
-    console.debug("obj", obj)
-    state.theme.tearDown = obj.tearDown
-}).catch((err) => {
-    console.error(err)
-});
 
 window.state = state
 window.main = state.el.main
@@ -158,6 +157,33 @@ state.el.main.addEventListener('click', (event) => {
 })
 
 // # Funcs
+
+const setTheme = () => {
+
+   
+    if (state.theme.name === Themes.migration) {
+        import('./themes/migration').then((obj) => {
+            console.debug("obj", obj)
+            state.theme.tearDown = obj.tearDown
+        }).catch((err) => {
+            console.error(err)
+        });
+    }
+
+    if (state.theme.name === Themes.waves) {
+        import('./themes/waves').then((obj) => {
+            console.debug("obj", obj)
+            state.theme.tearDown = obj.tearDown
+        }).catch((err) => {
+            console.error(err)
+        });
+    }
+
+
+
+}
+
+setTheme()
 
 const showResults = (votes, average) => {
     const main = state.el.main
@@ -287,9 +313,10 @@ peer.on('open', (id) => {
 
     if (hostId) {
         // You aren't the host
-        // main.children["players-loading"].classList.toggle("hidden")
     } else {
         // You are the host
+
+        shareButton.classList.toggle("hidden")
         const user = JSON.parse(localStorage.getItem("host"))
         if (user) {
             state.users[user.name] = { voted: false, details: user }
