@@ -20,9 +20,9 @@ const userList = document.getElementById("users")
 // # Types
 
 enum Themes {
-    minimalist = 'minimalist',
-    migration = 'migration',
-    waves = 'waves',
+    minimalist = 'Minimalist',
+    migration = 'Migration',
+    waves = 'Waves',
 
 
 }
@@ -79,40 +79,41 @@ const state = {
 window.state = state
 window.main = state.el.main
 
+// # respond to click events on buttons.
 state.el.main.addEventListener('click', (event) => {
   const el = event.target
   if (el.type !== "button") {
       return
   }
 
-    if (el.name === "restart") {
-        console.debug("restart game")
+  if (el.name === "restart") {
+      console.debug("restart game")
 
 
-        el.classList.toggle("hidden")
-        state.el.main.children[state.game.type].children["reveal"].classList.toggle("hidden")
-        state.el.main.children[state.game.type].children["results"].innerHTML = ""
+      el.classList.toggle("hidden")
+      state.el.main.children[state.game.type].children["reveal"].classList.toggle("hidden")
+      state.el.main.children[state.game.type].children["results"].innerHTML = ""
 
 
-        state.users = map((user) => {
-            return omit(["voted", "vote" ], user)
-        }, state.users)
+      state.users = map((user) => {
+          return omit(["voted", "vote" ], user)
+      }, state.users)
 
-        state.me = omit(["voted", "vote"], state.me)
-        listUsers()
-        forEach((conn) => {
-            console.debug("time to reveal all votes")
-            conn.send({action: 'restart_game', payload: true})
-            conn.send({action: 'refresh_users', payload: state.users})
+      state.me = omit(["voted", "vote"], state.me)
+      listUsers()
+      forEach((conn) => {
+          console.debug("time to reveal all votes")
+          conn.send({action: 'restart_game', payload: true})
+          conn.send({action: 'refresh_users', payload: state.users})
 
-        }, values(state.connections))
+      }, values(state.connections))
 
-        state.game.mode = GameModes.play
+      state.game.mode = GameModes.play
 
 
-        return
+      return
 
-    }
+  }
 
   if (el.name === "reveal") {
       console.debug("reveal something")
@@ -129,6 +130,8 @@ state.el.main.addEventListener('click', (event) => {
       return
       
   }
+
+  // # Default action. You're voting
 
   state.me.voted = true
   state.me.vote  = el.value
@@ -148,17 +151,20 @@ state.el.main.addEventListener('click', (event) => {
           console.debug("conn", conn)
           conn.send({action: 'refresh_users', payload: state.users})
       }, values(state.connections))
-
-
   }
-
- 
-
 })
+
+
+const settingsButton = document.getElementById("settings")
 
 // # Funcs
 
 const setTheme = () => {
+
+  
+    if (state.theme.name === Themes.minimalist) {
+      return
+    }
 
    
     if (state.theme.name === Themes.migration) {
@@ -178,13 +184,27 @@ const setTheme = () => {
             console.error(err)
         });
     }
-
-
-
 }
 
 setTheme()
 
+const shuffle = (array) => {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
 const showResults = (votes, average) => {
     const main = state.el.main
     const game = main.children[state.game.type]
@@ -192,7 +212,7 @@ const showResults = (votes, average) => {
    
 
     results.append(`average: ${average.toFixed(2)}`)
-    results.append(`  votes: ${votes}`)
+    results.append(`  votes: ${shuffle(votes)}`)
 
 
 }
@@ -310,11 +330,51 @@ peer.on('open', (id) => {
         navigator.clipboard.writeText(`${location.href}?hostId=${id}`)
     })
 
+    hostDialog.addEventListener('close',(e) => {
+      console.debug("e", e)
+      console.debug("userDialog.returnValue", hostDialog.returnValue)
+      const hostForm = e.target.firstElementChild
+      const hostInfo = new FormData(hostForm)
+      const user = {}
+      hostInfo.forEach((value, key) => (user[key] = value))
+      console.debug("hostInfo", hostInfo)
+
+      localStorage.setItem("host", JSON.stringify(user))
+
+      state.users[user.name] = { voted: false, details: user }
+      state.me = user
+
+      state.theme.name = user.theme
+      setTheme()
+
+
+
+      main.children["host-loading"].classList.toggle("hidden")
+
+
+
+      listUsers()
+
+
+    })
+
 
     if (hostId) {
         // You aren't the host
+        settingsButton.addEventListener('click', (event) => {
+
+          userDialog.showModal()
+
+        })
+    //
     } else {
         // You are the host
+
+      settingsButton.addEventListener('click', (event) => {
+
+        hostDialog.showModal()
+
+      })
 
         shareButton.classList.toggle("hidden")
         const user = JSON.parse(localStorage.getItem("host"))
@@ -330,29 +390,6 @@ peer.on('open', (id) => {
         else {
             if (typeof hostDialog.showModal === "function") {
                 hostDialog.showModal()
-                hostDialog.addEventListener('close',(e) => {
-                    console.debug("e", e)
-                    console.debug("userDialog.returnValue", hostDialog.returnValue)
-                    const hostForm = e.target.firstElementChild
-                    const hostInfo = new FormData(hostForm)
-                    const user = {}
-                    hostInfo.forEach((value, key) => (user[key] = value))
-                    console.debug("hostInfo", hostInfo)
-
-                    localStorage.setItem("host", JSON.stringify(user))
-
-                    state.users[user.name] = { voted: false, details: user }
-                    state.me = user
-
-
-                    main.children["host-loading"].classList.toggle("hidden")
-
-
-
-                    listUsers()
-
-
-                })
 
 
             }
@@ -472,35 +509,40 @@ peer.on('open', (id) => {
         console.debug("hostId", hostId)
 
         conn.on('open', () => {
+            userDialog.addEventListener('close',(e) => {
+              console.debug("e", e)
+              console.debug("userDialog.returnValue", userDialog.returnValue)
+              const userForm = e.target.firstElementChild
+              const userInfo = new FormData(userForm)
+              const user = {}
+              userInfo.forEach((value, key) => (user[key] = value))
+              localStorage.setItem("user", JSON.stringify(user))
+
+              console.debug("userInfo", userInfo)
+
+              console.debug("user", user)
+
+              state.theme.name = user.theme
+              setTheme()
+
+              state.me = user
+              conn.send({action: "add_user", payload: user})
+
+              listUsers()
+            })
+
             if (typeof userDialog.showModal === "function") {
 
                 const user = JSON.parse(localStorage.getItem("user"))
                 if (user) {
                     conn.send({action: "add_user", payload: user})
                     state.me = user
+                    state.theme.name = user.theme
+                    setTheme()
 
                 }
                 else {
                     userDialog.showModal()
-                    userDialog.addEventListener('close',(e) => {
-                        console.debug("e", e)
-                        console.debug("userDialog.returnValue", userDialog.returnValue)
-                        const userForm = e.target.firstElementChild
-                        const userInfo = new FormData(userForm)
-                        const user = {}
-                        userInfo.forEach((value, key) => (user[key] = value))
-                        localStorage.setItem("user", JSON.stringify(user))
-
-                        console.debug("userInfo", userInfo)
-
-                        state.me = user
-                        conn.send({action: "add_user", payload: user})
-
-                        listUsers()
-                    })
-
-
-
                 }
 
                 
