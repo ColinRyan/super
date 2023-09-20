@@ -57835,7 +57835,7 @@
     },
     matches: [],
     theme: {
-      name: "minimalist" /* minimalist */,
+      name: "Minimalist" /* minimalist */,
       tearDown: () => null
     }
   };
@@ -57891,8 +57891,12 @@
       }, values_default(state.connections));
     }
   });
+  var settingsButton = document.getElementById("settings");
   var setTheme = () => {
-    if (state.theme.name === "migration" /* migration */) {
+    if (state.theme.name === "Minimalist" /* minimalist */) {
+      return;
+    }
+    if (state.theme.name === "Migration" /* migration */) {
       Promise.resolve().then(() => (init_migration(), migration_exports)).then((obj) => {
         console.debug("obj", obj);
         state.theme.tearDown = obj.tearDown;
@@ -57900,7 +57904,7 @@
         console.error(err);
       });
     }
-    if (state.theme.name === "waves" /* waves */) {
+    if (state.theme.name === "Waves" /* waves */) {
       Promise.resolve().then(() => (init_waves(), waves_exports)).then((obj) => {
         console.debug("obj", obj);
         state.theme.tearDown = obj.tearDown;
@@ -57910,12 +57914,24 @@
     }
   };
   setTheme();
+  var shuffle = (array) => {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex > 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex],
+        array[currentIndex]
+      ];
+    }
+    return array;
+  };
   var showResults = (votes, average) => {
     const main = state.el.main;
     const game = main.children[state.game.type];
     const results = game.children.results;
     results.append(`average: ${average.toFixed(2)}`);
-    results.append(`  votes: ${votes}`);
+    results.append(`  votes: ${shuffle(votes)}`);
   };
   var revealVotes = () => {
     const votes = pipe(
@@ -57985,8 +58001,30 @@
     shareButton.addEventListener("click", (event) => {
       navigator.clipboard.writeText(`${location.href}?hostId=${id2}`);
     });
+    hostDialog.addEventListener("close", (e) => {
+      console.debug("e", e);
+      console.debug("userDialog.returnValue", hostDialog.returnValue);
+      const hostForm = e.target.firstElementChild;
+      const hostInfo = new FormData(hostForm);
+      const user = {};
+      hostInfo.forEach((value, key) => user[key] = value);
+      console.debug("hostInfo", hostInfo);
+      localStorage.setItem("host", JSON.stringify(user));
+      state.users[user.name] = { voted: false, details: user };
+      state.me = user;
+      state.theme.name = user.theme;
+      setTheme();
+      main.children["host-loading"].classList.toggle("hidden");
+      listUsers();
+    });
     if (hostId) {
+      settingsButton.addEventListener("click", (event) => {
+        userDialog.showModal();
+      });
     } else {
+      settingsButton.addEventListener("click", (event) => {
+        hostDialog.showModal();
+      });
       shareButton.classList.toggle("hidden");
       const user = JSON.parse(localStorage.getItem("host"));
       if (user) {
@@ -57998,20 +58036,6 @@
       } else {
         if (typeof hostDialog.showModal === "function") {
           hostDialog.showModal();
-          hostDialog.addEventListener("close", (e) => {
-            console.debug("e", e);
-            console.debug("userDialog.returnValue", hostDialog.returnValue);
-            const hostForm = e.target.firstElementChild;
-            const hostInfo = new FormData(hostForm);
-            const user2 = {};
-            hostInfo.forEach((value, key) => user2[key] = value);
-            console.debug("hostInfo", hostInfo);
-            localStorage.setItem("host", JSON.stringify(user2));
-            state.users[user2.name] = { voted: false, details: user2 };
-            state.me = user2;
-            main.children["host-loading"].classList.toggle("hidden");
-            listUsers();
-          });
         }
       }
     }
@@ -58091,26 +58115,31 @@
       console.debug("conn", conn);
       console.debug("hostId", hostId);
       conn.on("open", () => {
+        userDialog.addEventListener("close", (e) => {
+          console.debug("e", e);
+          console.debug("userDialog.returnValue", userDialog.returnValue);
+          const userForm = e.target.firstElementChild;
+          const userInfo = new FormData(userForm);
+          const user = {};
+          userInfo.forEach((value, key) => user[key] = value);
+          localStorage.setItem("user", JSON.stringify(user));
+          console.debug("userInfo", userInfo);
+          console.debug("user", user);
+          state.theme.name = user.theme;
+          setTheme();
+          state.me = user;
+          conn.send({ action: "add_user", payload: user });
+          listUsers();
+        });
         if (typeof userDialog.showModal === "function") {
           const user = JSON.parse(localStorage.getItem("user"));
           if (user) {
             conn.send({ action: "add_user", payload: user });
             state.me = user;
+            state.theme.name = user.theme;
+            setTheme();
           } else {
             userDialog.showModal();
-            userDialog.addEventListener("close", (e) => {
-              console.debug("e", e);
-              console.debug("userDialog.returnValue", userDialog.returnValue);
-              const userForm = e.target.firstElementChild;
-              const userInfo = new FormData(userForm);
-              const user2 = {};
-              userInfo.forEach((value, key) => user2[key] = value);
-              localStorage.setItem("user", JSON.stringify(user2));
-              console.debug("userInfo", userInfo);
-              state.me = user2;
-              conn.send({ action: "add_user", payload: user2 });
-              listUsers();
-            });
           }
         }
         window.addEventListener("beforeunload", (event) => {
