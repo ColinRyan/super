@@ -1,6 +1,6 @@
 // # Imports
 
-import {pipe, filter, omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values} from 'ramda'
+import {pipe, filter, omit, sum, mapAccum, map, mapObjIndexed, groupBy, dissoc, forEach, values, sort, clone} from 'ramda'
 import {Peer} from 'peerjs'
 
 
@@ -45,6 +45,13 @@ const state = {
         conn: null
     },
     me: {
+      name: "",
+      category: "",
+      theme: "Minimalist",
+
+
+      
+      
 
     },
     el: {
@@ -100,7 +107,7 @@ state.el.main.addEventListener('click', (event) => {
       }, state.users)
 
       state.me = omit(["voted", "vote"], state.me)
-      listUsers()
+      listPlayers()
       forEach((conn) => {
           console.debug("time to reveal all votes")
           conn.send({action: 'restart_game', payload: true})
@@ -144,7 +151,7 @@ state.el.main.addEventListener('click', (event) => {
 
       state.users[state.me.name].voted = true
 
-      listUsers()
+      listPlayers()
 
       forEach((conn) => {
           console.debug("send user list to all players")
@@ -155,7 +162,7 @@ state.el.main.addEventListener('click', (event) => {
 })
 
 
-const settingsButton = document.getElementById("settings")
+const settingsButton = document.getElementById("settings-button")
 
 // # Funcs
 
@@ -252,7 +259,9 @@ const revealVotes =  () => {
 const initalizeGame = () => {
 
     const main = state.el.main
-    forEach((el) => {
+  forEach((el: HTMLElement) => {
+    console.debug("el", el)
+      
        el.classList.add("hidden")
     
     },main.children)
@@ -271,7 +280,7 @@ const initalizeGame = () => {
 
 } 
 
-const listUsers = () => {
+const listPlayers = () => {
     
 
     userList.innerHTML = ""
@@ -282,8 +291,9 @@ const listUsers = () => {
     
     }, values(state.users))
 
-    const userLists = mapObjIndexed((users, category) => {
+    const usersByCategoryHTML = mapObjIndexed((users, category) => {
             const figure = document.createElement("figure")
+            figure.title = category
             const figCaption = document.createElement("figcaption")
             figCaption.innerText = category
             figure.appendChild(figCaption)
@@ -299,16 +309,33 @@ const listUsers = () => {
             figure.appendChild(ul)
             return figure
 
-
-
-
-            
-       
-    
     }, usersByCategory )
-    console.debug("userLists", userLists)
+    console.debug("userLists", usersByCategoryHTML)
 
-    userList.append( "Players", ...values(userLists))
+  
+  
+  const sortedUsersByCategoryHTML = sort((a,b) => {
+    if (a.title === 'host') {
+      return -1
+    }
+    if (b.title === 'host') {
+      return 1
+    }
+    if (b.title === a.title) {
+      return 0 
+    }
+
+    return -1
+    },
+    [...values(usersByCategoryHTML)])
+    console.debug("sortedUsersByCategoryHTML", sortedUsersByCategoryHTML)
+    userList.append( "Players", ...sortedUsersByCategoryHTML)
+  
+
+  
+
+  
+  
    
 
 }
@@ -317,9 +344,6 @@ const listUsers = () => {
 
 
 peer.on('open', (id) => {
-
-
-
     const hostId = params.hostId; 
     const main = state.el.main
 
@@ -331,9 +355,24 @@ peer.on('open', (id) => {
     })
 
     hostDialog.addEventListener('close',(e) => {
-      console.debug("e", e)
+
+      console.debug("closing", e)
+      console.debug("hostDialog", hostDialog)
+
+      if (state.game.mode === GameModes.wait) {
+        main.children["host-loading"].classList.toggle("hidden")
+
+        
+      
+      }
+      
+      if (hostDialog.returnValue === "" || hostDialog.returnValue === "cancel") {
+        return 
+      }
+
       console.debug("userDialog.returnValue", hostDialog.returnValue)
-      const hostForm = e.target.firstElementChild
+      const hostForm = document.forms["host-info-form"]
+      console.debug("hostForm.name.value", hostForm.name.value)
       const hostInfo = new FormData(hostForm)
       const user = {}
       hostInfo.forEach((value, key) => (user[key] = value))
@@ -341,19 +380,24 @@ peer.on('open', (id) => {
 
       localStorage.setItem("host", JSON.stringify(user))
 
+      delete state.users[state.me.name]
+
       state.users[user.name] = { voted: false, details: user }
       state.me = user
 
       state.theme.name = user.theme
       setTheme()
+      listPlayers()
+      hostDialog.hidden = true
+
+      forEach((conn) => {
+        console.debug("send user list to all players")
+        console.debug("conn", conn)
+        conn.send({action: 'refresh_users', payload: state.users})
+      }, values(state.connections))
 
 
-
-      main.children["host-loading"].classList.toggle("hidden")
-
-
-
-      listUsers()
+      
 
 
     })
@@ -362,6 +406,39 @@ peer.on('open', (id) => {
     if (hostId) {
         // You aren't the host
         settingsButton.addEventListener('click', (event) => {
+
+
+          main.children["host-loading"].classList.add("hidden")
+
+
+          const cancel = document.getElementById("user-info-dialog-cancel")
+          document.forms["user-info-form"].name.value = state.me.name
+          cancel.addEventListener("click", (e) => {
+            console.debug("cancel", e)
+            e.preventDefault()
+            e.stopPropagation()
+            userDialog.close("cancel")
+          })
+
+
+          const confirm = document.getElementById("user-info-dialog-confirm")
+          confirm.addEventListener("click", (e) => {
+            console.debug("test")
+            console.debug("confirm", e)
+            e.preventDefault()
+            e.stopPropagation()
+            userDialog.close("confirm")
+          })
+
+          userDialog.addEventListener("keydown", (e) => {
+            console.log(e.key)
+            if (e.key === "Enter") {
+              console.debug("enter confirm", e)
+
+              userDialog.close("confirm")
+            }
+          },)
+
 
           userDialog.showModal()
 
@@ -372,30 +449,62 @@ peer.on('open', (id) => {
 
       settingsButton.addEventListener('click', (event) => {
 
+
+
+        const cancel = document.getElementById("host-info-dialog-cancel")
+        document.forms["host-info-form"].name.value = state.me.name
+        cancel.addEventListener("click", (e) => {
+          console.debug("cancel", e)
+          e.preventDefault()
+          e.stopPropagation()
+          hostDialog.close("cancel")
+        })
+
+
+        const confirm = document.getElementById("host-info-dialog-confirm")
+        confirm.addEventListener("click", (e) => {
+          console.debug("test")
+          console.debug("confirm", e)
+          e.preventDefault()
+          e.stopPropagation()
+          hostDialog.close("confirm")
+        })
+
+        hostDialog.addEventListener("keydown", (e) => {
+          console.log(e.key)
+          if (e.key === "Enter") {
+            console.debug("enter confirm", e)
+
+            hostDialog.close("confirm")
+          }
+        },)
+        main.children["host-loading"].classList.add("hidden")
+
         hostDialog.showModal()
+        hostDialog.hidden = false
 
       })
 
-        shareButton.classList.toggle("hidden")
-        const user = JSON.parse(localStorage.getItem("host"))
-        if (user) {
-            state.users[user.name] = { voted: false, details: user }
-            state.me = user
-            listUsers()
-            console.debug("main", main)
-            main.children["host-loading"].classList.toggle("hidden")
+      shareButton.classList.toggle("hidden")
+      const user = JSON.parse(localStorage.getItem("host"))
+      if (user) {
+          state.users[user.name] = { voted: false, details: user }
+          state.me = user
+          listPlayers()
+          console.debug("main", main)
+          main.children["host-loading"].classList.toggle("hidden")
 
 
-        }
-        else {
-            if (typeof hostDialog.showModal === "function") {
-                hostDialog.showModal()
+      }
+      else {
+          if (typeof hostDialog.showModal === "function") {
+              hostDialog.showModal()
 
 
-            }
+          }
 
 
-        }
+      }
 
         
     }
@@ -425,7 +534,7 @@ peer.on('open', (id) => {
                             console.debug("conn", conn)
                             conn.send({action: 'refresh_users', payload: state.users})
                         }, values(state.connections))
-                        listUsers()
+                        listPlayers()
                         break;
 
                     case "reveal_vote":
@@ -462,11 +571,16 @@ peer.on('open', (id) => {
                         }, values(state.connections))
 
 
-                        listUsers()
+                        listPlayers()
                         break
 
                     case "add_user":
                         console.debug("new user added to host!", payload)
+                        const key = payload.was ?? payload.name
+                        delete state.connections[key] 
+                        delete state.users[key] 
+
+
                         state.users[payload.name] = { voted: false, details: payload}
                         state.connections[payload.name] = conn
 
@@ -483,7 +597,7 @@ peer.on('open', (id) => {
                             
                         }
 
-                        listUsers()
+                        listPlayers()
                         break
                     default:
                         console.log("default")
@@ -510,7 +624,14 @@ peer.on('open', (id) => {
 
         conn.on('open', () => {
             userDialog.addEventListener('close',(e) => {
-              console.debug("e", e)
+
+              main.children["host-loading"].classList.add("hidden")
+
+              if (userDialog.returnValue === "" || userDialog.returnValue === "cancel") {
+                return 
+              }
+              
+              console.debug("closeing", e)
               console.debug("userDialog.returnValue", userDialog.returnValue)
               const userForm = e.target.firstElementChild
               const userInfo = new FormData(userForm)
@@ -525,10 +646,19 @@ peer.on('open', (id) => {
               state.theme.name = user.theme
               setTheme()
 
-              state.me = user
-              conn.send({action: "add_user", payload: user})
+              conn.send({action: "add_user", payload: { was: clone(state.me.name), ...user }})
 
-              listUsers()
+              state.me = user
+
+
+              listPlayers()
+              forEach((conn) => {
+                console.debug("send user list to all players")
+                console.debug("conn", conn)
+                conn.send({action: 'refresh_users', payload: state.users})
+              }, values(state.connections))
+
+
             })
 
             if (typeof userDialog.showModal === "function") {
@@ -567,7 +697,7 @@ peer.on('open', (id) => {
                     case "refresh_users":
                         console.debug("new users!", payload)
                         state.users = payload 
-                        listUsers()
+                        listPlayers()
                         break
 
                     case "show_results":
@@ -591,7 +721,7 @@ peer.on('open', (id) => {
                     case "add_user":
                         console.debug("new user!", payload)
                         state.users[payload.name] = { voted: false, details: payload }
-                        listUsers()
+                        listPlayers()
                         break
                     case "initalize_game":
                         state.game.type = payload.type
@@ -610,6 +740,7 @@ peer.on('open', (id) => {
 
     if (typeof hostDialog.showModal !== 'function') {
         hostDialog.hidden = true
+
     }
 
     if (typeof userDialog.showModal !== 'function') {

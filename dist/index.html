@@ -20,7 +20,7 @@
           </div>
 
 
-            <div id="settings" class="hidden">
+            <div id="settings" >
                 <button id="settings-button">Settings ⚙️</button>
             </div>
 
@@ -46,69 +46,87 @@
                   <li><input type="button" class="option" value="??"/></li>
                   <li><input type="button" class="option" value="coffee cup"/></li>
               </ul>
-              <input id="storypointing-reveal" name="reveal" type="button"
-              value="reveal" class="hidden"/>
-              <input id="storypointing-restart" name="restart" type="button"
-                                                             value="restart" class="hidden"/>
+              <input 
+                    id="storypointing-reveal" 
+                    name="reveal" 
+                    type="button"
+                    value="reveal" 
+                    class="button hidden"
+              />
+              <input 
+                    id="storypointing-restart" 
+                    name="restart" 
+                    type="button"
+                    value="restart" 
+                    class="button hidden"
+              />
 
           </section>
+            
+            
       </main>
-      <dialog id="host-info-dialog">
-          <form method="dialog">
-                  <label for="name">name:
-                      <input name="name" type="text" required/>
-                  </label>
-                  <input checked type="checkbox" id="host" name="category"
-                                                value="host"
-                                                hidden/>
-                  
+      
+        <dialog id="user-info-dialog">
+            <form name="user-info-form" method="dialog">
+                <label for="name">name:
+                    <input name="name" type="text" required/>
+                </label>
+                <fieldset>
+                    <legend>Category</legend>
+
+
+                    <div>
+                        <input type="radio" id="spectator" name="category"
+                            value="spectator"/>
+                        <label for="category">Spectator</label>
+
+                    </div>
+                    <div>
+                        <input type="radio" id="qc" name="category" value="qc"/>
+                        <label for="category">QC</label>
+
+                    </div>
+                    <div>
+                        <input type="radio" id="dev" name="category" checked value="dev"/>
+                        <label for="category">Dev</label>
+
+                    </div>
+                </fieldset>
+                <select id="user-info-theme" name="theme">
+                    <option selected>Minimalist</option>
+                    <option>Waves</option>
+                    <option>Migration</option>
+                </select>
+                <div>
+
+                    <button id="user-info-dialog-cancel" value="cancel">Cancel</button>
+                    <button id="user-info-dialog-confirm" value="confirm">Confirm</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog id="host-info-dialog">
+            <form name="host-info-form" method="dialog">
+                <label for="name">name:
+                    <input name="name" type="text" required/>
+                </label>
+                <input checked type="checkbox" id="host" name="category"
+                    value="host"
+                    hidden/>
+
                 <select id="host-info-theme" name="theme">
                     <option selected>Minimalist</option>
                     <option>Waves</option>
                     <option>Migration</option>
                 </select>
 
-              <div>
-                  <button id="host-info-dialog-confirm" value="default">Confirm</button>
-              </div>
-          </form>
-      </dialog>
-      <dialog id="user-info-dialog">
-          <form method="dialog">
-                  <label for="name">name:
-                      <input name="name" type="text" required/>
-                  </label>
-                  <fieldset>
-                      <legend>Category</legend>
+                <div>
+                    <button id="host-info-dialog-cancel" name="cancel" value="cancel">Cancel</button>
 
-
-                      <div>
-                          <input type="radio" id="spectator" name="category"
-                                                             value="spectator"/>
-                          <label for="category">Spectator</label>
-
-                      </div>
-                      <div>
-                          <input type="radio" id="qc" name="category" value="qc"/>
-                          <label for="category">QC</label>
-
-                      </div>
-                      <div>
-                          <input type="radio" id="dev" name="category" checked value="dev"/>
-                          <label for="category">Dev</label>
-
-                      </div>
-                  </fieldset>
-                <select id="user-info-theme" name="theme">
-                    <option selected>Minimalist</option>
-                    <option>Waves</option>
-                    <option>Migration</option>
-                </select>
-              <div>
-                  <button id="user-info-dialog-confirm" value="default">Confirm</button>
-              </div>
-          </form>
-      </dialog>
+                    <button id="host-info-dialog-confirm" name="confirm" value="confirm">Confirm</button>
+                </div>
+            </form>
+        </dialog>
+      
         
       <script type="module" src="./index.js"></script>
   </body>
