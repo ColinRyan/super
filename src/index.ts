@@ -230,6 +230,10 @@ const revealVotes =  () => {
         filter((user) => {
             return user.vote !== null
         }),
+        filter((user) => {
+          return user.details.category !== 'spectator'
+        }),
+
         map((user) => {
             return user.vote
         })
@@ -274,6 +278,7 @@ const initalizeGame = () => {
         game.children["reveal"].classList.remove("hidden")
     }
 
+
     state.game.mode = GameModes.play
 
 
@@ -301,7 +306,13 @@ const listPlayers = () => {
 
             const listItems = map((user) => {
                 const li = document.createElement("li")
-                li.innerText = `${user.details.name}${user.voted ? " 🗹": " ☐"}`
+                li.innerText = `${user.details.name}`
+
+                if (user.details.category !== 'spectator') {
+                  li.innerText = `${user.details.name}${user.voted ? " 🗹": " ☐"}`
+                
+                }
+                
                 return li
             }, users)
             
