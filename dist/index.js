@@ -19370,10 +19370,11 @@
   // src/themes/migration.ts
   var migration_exports = {};
   __export(migration_exports, {
+    setup: () => setup,
     start: () => start,
     tearDown: () => tearDown
   });
-  var p5, rand, opt, Particles, time, start, P5, tearDown;
+  var p5, rand, opt, Particles, time, start, P5, setup, tearDown;
   var init_migration = __esm({
     "src/themes/migration.ts"() {
       p5 = __toESM(require_p5_min(), 1);
@@ -19496,8 +19497,12 @@
         }
       };
       console.debug("p5", p5);
-      P5 = new p5.default(start);
-      tearDown = P5.tearDown;
+      setup = () => {
+        P5 = new p5.default(start);
+      };
+      tearDown = () => {
+        P5.tearDown();
+      };
       console.debug("P5", P5);
     }
   });
@@ -23568,7 +23573,7 @@
     const defaultState = createBindingState(null);
     let currentState = defaultState;
     let forceUpdate = false;
-    function setup(object, material, program, geometry, index) {
+    function setup3(object, material, program, geometry, index) {
       let updateBuffers = false;
       if (vaoAvailable) {
         const state2 = getBindingState(geometry, program, material);
@@ -23912,7 +23917,7 @@
       defaultState.wireframe = false;
     }
     return {
-      setup,
+      setup: setup3,
       reset,
       resetDefaultState,
       dispose,
@@ -26512,7 +26517,7 @@
         opaque.unshift(renderItem);
       }
     }
-    function sort(customOpaqueSort, customTransparentSort) {
+    function sort3(customOpaqueSort, customTransparentSort) {
       if (opaque.length > 1)
         opaque.sort(customOpaqueSort || painterSortStable);
       if (transmissive.length > 1)
@@ -26540,7 +26545,7 @@
       push,
       unshift,
       finish,
-      sort
+      sort: sort3
     };
   }
   function WebGLRenderLists() {
@@ -26710,7 +26715,7 @@
     const vector3 = new Vector3();
     const matrix4 = new Matrix4();
     const matrix42 = new Matrix4();
-    function setup(lights, physicallyCorrectLights) {
+    function setup3(lights, physicallyCorrectLights) {
       let r = 0, g = 0, b = 0;
       for (let i = 0; i < 9; i++)
         state2.probe[i].set(0, 0, 0);
@@ -26923,7 +26928,7 @@
       }
     }
     return {
-      setup,
+      setup: setup3,
       setupView,
       state: state2
     };
@@ -51934,39 +51939,48 @@
   // src/themes/waves.ts
   var waves_exports = {};
   __export(waves_exports, {
+    setup: () => setup2,
     tearDown: () => tearDown2
   });
-  function App() {
-    document.head.innerHTML += '<link id="theme-waves" rel="stylesheet" type="text/css" href="./themes/waves.css">';
-    const conf = {
-      nx: 40,
-      ny: 100,
-      cscale: import_chroma_js.default.scale(["#2175D8", "#DC5DCE", "#CC223D", "#F07414", "#FDEE61", "#74C425"]).mode("lch"),
-      darken: -1,
-      angle: Math.PI / 3,
-      timeCoef: 0.1
-    };
-    console.debug("THREE", three_module_exports);
-    let renderer, scene, camera;
-    let width2, height2;
-    const { randFloat: rnd } = MathUtils;
-    const uTime = { value: 0 }, uTimeCoef = { value: conf.timeCoef };
-    const polylines = [];
-    init();
-    function init() {
-      const canvas = document.createElement("canvas");
-      canvas.setAttribute("id", "canvas");
-      document.body.appendChild(canvas);
-      renderer = new WebGLRenderer({ canvas: document.getElementById("canvas"), antialias: true });
-      camera = new PerspectiveCamera();
-      updateSize();
-      window.addEventListener("resize", updateSize, false);
-      initScene();
-      requestAnimationFrame(animate);
-    }
-    function initScene() {
-      scene = new Scene();
-      const vertexShader = `
+  var import_chroma_js, active, animationId, App, Polyline, setup2, tearDown2;
+  var init_waves = __esm({
+    "src/themes/waves.ts"() {
+      import_chroma_js = __toESM(require_chroma(), 1);
+      init_three_module();
+      active = false;
+      animationId = null;
+      App = () => {
+        const conf = {
+          nx: 40,
+          ny: 100,
+          cscale: import_chroma_js.default.scale(["#2175D8", "#DC5DCE", "#CC223D", "#F07414", "#FDEE61", "#74C425"]).mode("lch"),
+          darken: -1,
+          angle: Math.PI / 3,
+          timeCoef: 0.1
+        };
+        console.debug("THREE", three_module_exports);
+        let renderer, scene, camera;
+        let width2, height2;
+        const { randFloat: rnd } = MathUtils;
+        const uTime = { value: 0 }, uTimeCoef = { value: conf.timeCoef };
+        const polylines = [];
+        init();
+        function init() {
+          document.head.innerHTML += '<link id="theme-waves" rel="stylesheet" type="text/css" href="./themes/waves.css">';
+          const canvas = document.createElement("canvas");
+          canvas.setAttribute("id", "theme-waves-canvas");
+          document.body.appendChild(canvas);
+          renderer = new WebGLRenderer({ canvas, antialias: true });
+          camera = new PerspectiveCamera();
+          updateSize();
+          window.addEventListener("resize", updateSize, false);
+          initScene();
+          active = true;
+          animationId = requestAnimationFrame(animate);
+        }
+        function initScene() {
+          scene = new Scene();
+          const vertexShader = `
       uniform float uTime, uTimeCoef;
       uniform float uSize;
       uniform mat2 uMat2;
@@ -52012,7 +52026,7 @@
         gl_Position = vec4(pos, 0.0, 1.0);
       }
     `;
-      const fragmentShader = `
+          const fragmentShader = `
       uniform vec3 uColor1;
       uniform vec3 uColor2;
       varying vec2 vUv;
@@ -52020,70 +52034,69 @@
         gl_FragColor = vec4(mix(uColor1, uColor2, vUv.x), 1.0);
       }
     `;
-      const dx = 2 / conf.nx, dy = -2 / (conf.ny - 1);
-      const ox = -1 + dx / 2, oy = 1;
-      const mat2 = Float32Array.from([Math.cos(conf.angle), -Math.sin(conf.angle), Math.sin(conf.angle), Math.cos(conf.angle)]);
-      for (let i = 0; i < conf.nx; i++) {
-        const points = [];
-        for (let j = 0; j < conf.ny; j++) {
-          const x = ox + i * dx, y = oy + j * dy;
-          points.push(new Vector3(x, y, 0));
+          const dx = 2 / conf.nx, dy = -2 / (conf.ny - 1);
+          const ox = -1 + dx / 2, oy = 1;
+          const mat2 = Float32Array.from([Math.cos(conf.angle), -Math.sin(conf.angle), Math.sin(conf.angle), Math.cos(conf.angle)]);
+          for (let i = 0; i < conf.nx; i++) {
+            const points = [];
+            for (let j = 0; j < conf.ny; j++) {
+              const x = ox + i * dx, y = oy + j * dy;
+              points.push(new Vector3(x, y, 0));
+            }
+            const polyline = new Polyline({ points });
+            polylines.push(polyline);
+            const material = new ShaderMaterial({
+              uniforms: {
+                uTime,
+                uTimeCoef,
+                uMat2: { value: mat2 },
+                uSize: { value: 1.5 / conf.nx },
+                uRnd1: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
+                uRnd2: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
+                uRnd3: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
+                uRnd4: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
+                uRnd5: { value: new Vector3(rnd(0.2, 0.5), rnd(0.3, 0.6), rnd(0.4, 0.7)) },
+                uColor1: { value: new Color(conf.cscale(i / conf.nx).hex()) },
+                uColor2: { value: new Color(conf.cscale(i / conf.nx).darken(conf.darken).hex()) }
+              },
+              vertexShader,
+              fragmentShader
+            });
+            const mesh = new Mesh(polyline.geometry, material);
+            scene.add(mesh);
+          }
         }
-        const polyline = new Polyline({ points });
-        polylines.push(polyline);
-        const material = new ShaderMaterial({
-          uniforms: {
-            uTime,
-            uTimeCoef,
-            uMat2: { value: mat2 },
-            uSize: { value: 1.5 / conf.nx },
-            uRnd1: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
-            uRnd2: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
-            uRnd3: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
-            uRnd4: { value: new Vector3(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)) },
-            uRnd5: { value: new Vector3(rnd(0.2, 0.5), rnd(0.3, 0.6), rnd(0.4, 0.7)) },
-            uColor1: { value: new Color(conf.cscale(i / conf.nx).hex()) },
-            uColor2: { value: new Color(conf.cscale(i / conf.nx).darken(conf.darken).hex()) }
-          },
-          vertexShader,
-          fragmentShader
-        });
-        const mesh = new Mesh(polyline.geometry, material);
-        scene.add(mesh);
-      }
-    }
-    function disposeScene() {
-      for (let i = 0; i < scene.children.length; i++) {
-        const mesh = scene.children[i];
-        scene.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-      }
-      scene.dispose();
-    }
-    function randomCScale() {
-      const colors = [], n = 2 + Math.floor(rnd(0, 4));
-      for (let i = 0; i < n; i++) {
-        colors.push(import_chroma_js.default.random());
-      }
-      return import_chroma_js.default.scale(colors).mode("lch");
-    }
-    function animate(t) {
-      uTime.value = t * 1e-3;
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    }
-    function updateSize() {
-      width2 = window.innerWidth;
-      height2 = window.innerHeight;
-      renderer.setSize(width2, height2);
-    }
-  }
-  var import_chroma_js, Polyline, tearDown2;
-  var init_waves = __esm({
-    "src/themes/waves.ts"() {
-      import_chroma_js = __toESM(require_chroma(), 1);
-      init_three_module();
+        function disposeScene() {
+          for (let i = 0; i < scene.children.length; i++) {
+            const mesh = scene.children[i];
+            scene.remove(mesh);
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+          }
+          scene.dispose();
+        }
+        function randomCScale() {
+          const colors = [], n = 2 + Math.floor(rnd(0, 4));
+          for (let i = 0; i < n; i++) {
+            colors.push(import_chroma_js.default.random());
+          }
+          return import_chroma_js.default.scale(colors).mode("lch");
+        }
+        function animate(t) {
+          if (active) {
+            uTime.value = t * 1e-3;
+            renderer.render(scene, camera);
+            animationId = requestAnimationFrame(animate);
+          } else {
+            cancelAnimationFrame(animationId);
+          }
+        }
+        function updateSize() {
+          width2 = window.innerWidth;
+          height2 = window.innerHeight;
+          renderer.setSize(width2, height2);
+        }
+      };
       Polyline = function() {
         const tmp2 = new Vector3();
         class Polyline2 {
@@ -52147,9 +52160,14 @@
         }
         return Polyline2;
       }();
-      App();
+      setup2 = () => {
+        App();
+      };
       tearDown2 = () => {
         document.getElementById("theme-waves").remove();
+        document.getElementById("theme-waves-canvas").remove();
+        cancelAnimationFrame(animationId);
+        active = false;
       };
     }
   });
@@ -52713,6 +52731,12 @@
     }
   }
 
+  // node_modules/ramda/es/clone.js
+  var clone = /* @__PURE__ */ _curry1(function clone2(value) {
+    return value != null && typeof value.clone === "function" ? value.clone() : _clone(value, [], [], true);
+  });
+  var clone_default = clone;
+
   // node_modules/ramda/es/internal/_pipe.js
   function _pipe(f, g) {
     return function() {
@@ -53006,6 +53030,12 @@
     return result;
   });
   var omit_default = omit;
+
+  // node_modules/ramda/es/sort.js
+  var sort = /* @__PURE__ */ _curry2(function sort2(comparator, list) {
+    return Array.prototype.slice.call(list, 0).sort(comparator);
+  });
+  var sort_default = sort;
 
   // node_modules/ramda/es/trim.js
   var hasProtoTrim = typeof String.prototype.trim === "function";
@@ -57823,7 +57853,11 @@
     host: {
       conn: null
     },
-    me: {},
+    me: {
+      name: "",
+      category: "",
+      theme: "Minimalist"
+    },
     el: {
       main: document.getElementById("content")
     },
@@ -57839,6 +57873,11 @@
       tearDown: () => null
     }
   };
+  var storedUser = JSON.parse(localStorage.getItem("user"));
+  if (storedUser) {
+    state.me = storedUser;
+    state.theme.name = storedUser.theme;
+  }
   window.state = state;
   window.main = state.el.main;
   state.el.main.addEventListener("click", (event) => {
@@ -57855,7 +57894,7 @@
         return omit_default(["voted", "vote"], user);
       }, state.users);
       state.me = omit_default(["voted", "vote"], state.me);
-      listUsers();
+      listPlayers();
       forEach_default((conn) => {
         console.debug("time to reveal all votes");
         conn.send({ action: "restart_game", payload: true });
@@ -57883,7 +57922,7 @@
       state.host.conn.send({ action: "user_voted", payload: { name: state.me.name } });
     } else {
       state.users[state.me.name].voted = true;
-      listUsers();
+      listPlayers();
       forEach_default((conn) => {
         console.debug("send user list to all players");
         console.debug("conn", conn);
@@ -57891,15 +57930,24 @@
       }, values_default(state.connections));
     }
   });
-  var settingsButton = document.getElementById("settings");
+  var settingsButton = document.getElementById("settings-button");
   var setTheme = () => {
     if (state.theme.name === "Minimalist" /* minimalist */) {
+      if (state.theme.tearDown) {
+        state.theme.tearDown();
+        state.theme.tearDown = null;
+      }
       return;
     }
     if (state.theme.name === "Migration" /* migration */) {
       Promise.resolve().then(() => (init_migration(), migration_exports)).then((obj) => {
         console.debug("obj", obj);
+        if (state.theme.tearDown) {
+          state.theme.tearDown();
+          state.theme.tearDown = null;
+        }
         state.theme.tearDown = obj.tearDown;
+        obj.setup();
       }).catch((err) => {
         console.error(err);
       });
@@ -57907,13 +57955,17 @@
     if (state.theme.name === "Waves" /* waves */) {
       Promise.resolve().then(() => (init_waves(), waves_exports)).then((obj) => {
         console.debug("obj", obj);
+        if (state.theme.tearDown) {
+          state.theme.tearDown();
+          state.theme.tearDown = null;
+        }
         state.theme.tearDown = obj.tearDown;
+        obj.setup();
       }).catch((err) => {
         console.error(err);
       });
     }
   };
-  setTheme();
   var shuffle = (array) => {
     let currentIndex = array.length, randomIndex;
     while (currentIndex > 0) {
@@ -57938,6 +57990,9 @@
       filter_default((user) => {
         return user.vote !== null;
       }),
+      filter_default((user) => {
+        return user.details.category !== "spectator";
+      }),
       map_default((user) => {
         return user.vote;
       })
@@ -57958,6 +58013,7 @@
   var initalizeGame = () => {
     const main = state.el.main;
     forEach_default((el) => {
+      console.debug("el", el);
       el.classList.add("hidden");
     }, main.children);
     const game = main.children[state.game.type];
@@ -57968,30 +58024,50 @@
     }
     state.game.mode = "play" /* play */;
   };
-  var listUsers = () => {
+  var listPlayers = () => {
     userList.innerHTML = "";
     console.debug("state", state);
     console.debug("values(state.users)", values_default(state.users));
     const usersByCategory = groupBy_default((user) => {
       return user.details.category;
     }, values_default(state.users));
-    const userLists = mapObjIndexed_default((users, category) => {
+    const usersByCategoryHTML = mapObjIndexed_default((users, category) => {
       const figure = document.createElement("figure");
+      figure.title = category;
       const figCaption = document.createElement("figcaption");
       figCaption.innerText = category;
       figure.appendChild(figCaption);
       const ul = document.createElement("ul");
       const listItems = map_default((user) => {
         const li = document.createElement("li");
-        li.innerText = `${user.details.name}${user.voted ? " \u{1F5F9}" : " \u2610"}`;
+        li.innerText = `${user.details.name}`;
+        if (user.details.category !== "spectator") {
+          li.innerText = `${user.details.name}${user.voted ? " \u{1F5F9}" : " \u2610"}`;
+        }
         return li;
       }, users);
       ul.append(...listItems);
       figure.appendChild(ul);
       return figure;
     }, usersByCategory);
-    console.debug("userLists", userLists);
-    userList.append("Players", ...values_default(userLists));
+    console.debug("userLists", usersByCategoryHTML);
+    const sortedUsersByCategoryHTML = sort_default(
+      (a, b) => {
+        if (a.title === "host") {
+          return -1;
+        }
+        if (b.title === "host") {
+          return 1;
+        }
+        if (b.title === a.title) {
+          return 0;
+        }
+        return -1;
+      },
+      [...values_default(usersByCategoryHTML)]
+    );
+    console.debug("sortedUsersByCategoryHTML", sortedUsersByCategoryHTML);
+    userList.append("Players", ...sortedUsersByCategoryHTML);
   };
   peer.on("open", (id2) => {
     const hostId = params.hostId;
@@ -58002,35 +58078,101 @@
       navigator.clipboard.writeText(`${location.href}?hostId=${id2}`);
     });
     hostDialog.addEventListener("close", (e) => {
-      console.debug("e", e);
+      console.debug("closing", e);
+      console.debug("hostDialog", hostDialog);
+      if (state.game.mode === "wait" /* wait */) {
+        main.children["host-loading"].classList.toggle("hidden");
+      }
+      if (hostDialog.returnValue === "" || hostDialog.returnValue === "cancel") {
+        return;
+      }
       console.debug("userDialog.returnValue", hostDialog.returnValue);
-      const hostForm = e.target.firstElementChild;
+      const hostForm = document.forms["host-info-form"];
+      console.debug("hostForm.name.value", hostForm.name.value);
       const hostInfo = new FormData(hostForm);
       const user = {};
       hostInfo.forEach((value, key) => user[key] = value);
       console.debug("hostInfo", hostInfo);
       localStorage.setItem("host", JSON.stringify(user));
+      delete state.users[state.me.name];
       state.users[user.name] = { voted: false, details: user };
       state.me = user;
       state.theme.name = user.theme;
       setTheme();
-      main.children["host-loading"].classList.toggle("hidden");
-      listUsers();
+      listPlayers();
+      hostDialog.hidden = true;
+      forEach_default((conn) => {
+        console.debug("send user list to all players");
+        console.debug("conn", conn);
+        conn.send({ action: "refresh_users", payload: state.users });
+      }, values_default(state.connections));
     });
     if (hostId) {
+      document.getElementById("share").classList.add("hidden");
       settingsButton.addEventListener("click", (event) => {
+        main.children["host-loading"].classList.add("hidden");
+        const cancel = document.getElementById("user-info-dialog-cancel");
+        document.forms["user-info-form"].name.value = state.me.name;
+        cancel.addEventListener("click", (e) => {
+          console.debug("cancel", e);
+          e.preventDefault();
+          e.stopPropagation();
+          userDialog.close("cancel");
+        });
+        const confirm = document.getElementById("user-info-dialog-confirm");
+        confirm.addEventListener("click", (e) => {
+          console.debug("test");
+          console.debug("confirm", e);
+          e.preventDefault();
+          e.stopPropagation();
+          userDialog.close("confirm");
+        });
+        userDialog.addEventListener("keydown", (e) => {
+          console.log(e.key);
+          if (e.key === "Enter") {
+            console.debug("enter confirm", e);
+            userDialog.close("confirm");
+          }
+        });
         userDialog.showModal();
       });
     } else {
       settingsButton.addEventListener("click", (event) => {
+        const cancel = document.getElementById("host-info-dialog-cancel");
+        document.forms["host-info-form"].name.value = state.me.name;
+        cancel.addEventListener("click", (e) => {
+          console.debug("cancel", e);
+          e.preventDefault();
+          e.stopPropagation();
+          hostDialog.close("cancel");
+        });
+        const confirm = document.getElementById("host-info-dialog-confirm");
+        confirm.addEventListener("click", (e) => {
+          console.debug("test");
+          console.debug("confirm", e);
+          e.preventDefault();
+          e.stopPropagation();
+          hostDialog.close("confirm");
+        });
+        hostDialog.addEventListener("keydown", (e) => {
+          console.log(e.key);
+          if (e.key === "Enter") {
+            console.debug("enter confirm", e);
+            hostDialog.close("confirm");
+          }
+        });
+        main.children["host-loading"].classList.add("hidden");
         hostDialog.showModal();
+        hostDialog.hidden = false;
       });
       shareButton.classList.toggle("hidden");
       const user = JSON.parse(localStorage.getItem("host"));
       if (user) {
         state.users[user.name] = { voted: false, details: user };
         state.me = user;
-        listUsers();
+        state.theme.name = user.theme;
+        setTheme();
+        listPlayers();
         console.debug("main", main);
         main.children["host-loading"].classList.toggle("hidden");
       } else {
@@ -58058,7 +58200,7 @@
                 console.debug("conn", conn2);
                 conn2.send({ action: "refresh_users", payload: state.users });
               }, values_default(state.connections));
-              listUsers();
+              listPlayers();
               break;
             case "reveal_vote":
               console.debug("Counting votes");
@@ -58084,10 +58226,13 @@
                 console.debug("conn", conn2);
                 conn2.send({ action: "refresh_users", payload: state.users });
               }, values_default(state.connections));
-              listUsers();
+              listPlayers();
               break;
             case "add_user":
               console.debug("new user added to host!", payload);
+              const key = payload.was ?? payload.name;
+              delete state.connections[key];
+              delete state.users[key];
               state.users[payload.name] = { voted: false, details: payload };
               state.connections[payload.name] = conn;
               forEach_default((conn2) => {
@@ -58099,7 +58244,7 @@
               if (values_default(state.users).length > 1 && state.game.mode === "wait" /* wait */) {
                 initalizeGame();
               }
-              listUsers();
+              listPlayers();
               break;
             default:
               console.log("default");
@@ -58116,7 +58261,11 @@
       console.debug("hostId", hostId);
       conn.on("open", () => {
         userDialog.addEventListener("close", (e) => {
-          console.debug("e", e);
+          main.children["host-loading"].classList.add("hidden");
+          if (userDialog.returnValue === "" || userDialog.returnValue === "cancel") {
+            return;
+          }
+          console.debug("closeing", e);
           console.debug("userDialog.returnValue", userDialog.returnValue);
           const userForm = e.target.firstElementChild;
           const userInfo = new FormData(userForm);
@@ -58127,9 +58276,14 @@
           console.debug("user", user);
           state.theme.name = user.theme;
           setTheme();
+          conn.send({ action: "add_user", payload: { was: clone_default(state.me.name), ...user } });
           state.me = user;
-          conn.send({ action: "add_user", payload: user });
-          listUsers();
+          listPlayers();
+          forEach_default((conn2) => {
+            console.debug("send user list to all players");
+            console.debug("conn", conn2);
+            conn2.send({ action: "refresh_users", payload: state.users });
+          }, values_default(state.connections));
         });
         if (typeof userDialog.showModal === "function") {
           const user = JSON.parse(localStorage.getItem("user"));
@@ -58158,7 +58312,7 @@
             case "refresh_users":
               console.debug("new users!", payload);
               state.users = payload;
-              listUsers();
+              listPlayers();
               break;
             case "show_results":
               showResults(payload.votes, payload.average);
@@ -58176,7 +58330,7 @@
             case "add_user":
               console.debug("new user!", payload);
               state.users[payload.name] = { voted: false, details: payload };
-              listUsers();
+              listPlayers();
               break;
             case "initalize_game":
               state.game.type = payload.type;
@@ -58196,6 +58350,7 @@
     if (typeof userDialog.showModal !== "function") {
       userDialog.hidden = true;
     }
+    setTheme();
   });
 })();
 /*! p5.js v1.5.0 October 18, 2022 */
