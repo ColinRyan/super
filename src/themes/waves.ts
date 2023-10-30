@@ -1,8 +1,10 @@
 import chroma from 'chroma-js'
 import * as THREE from 'three'
 
-function App() {
-    document.head.innerHTML += '<link id="theme-waves" rel="stylesheet" type="text/css" href="./themes/waves.css">'
+let active = false
+let animationId = null
+
+const App = () =>{
 
   const conf = {
     nx: 40,
@@ -24,17 +26,21 @@ function App() {
   init();
 
   function init() {
+    document.head.innerHTML += '<link id="theme-waves" rel="stylesheet" type="text/css" href="./themes/waves.css">'
+
     const canvas = document.createElement("canvas")
-    canvas.setAttribute("id", "canvas")
+    canvas.setAttribute("id", "theme-waves-canvas")
     document.body.appendChild(canvas)
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     camera = new THREE.PerspectiveCamera();
 
     updateSize();
     window.addEventListener('resize', updateSize, false);
 
     initScene();
-    requestAnimationFrame(animate);
+    active = true
+
+    animationId = requestAnimationFrame(animate);
   }
 
   function initScene() {
@@ -149,9 +155,15 @@ function App() {
   }
 
   function animate(t) {
-    uTime.value = t * 0.001;
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    if (active) {
+      uTime.value = t * 0.001;
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(animate);
+    } else {
+      cancelAnimationFrame(animationId)
+
+    }
+    
   }
 
   function updateSize() {
@@ -235,11 +247,17 @@ const Polyline = (function () {
   return Polyline;
 })();
 
-App();
+export const setup = () => {
+  App()
+}
 
 export const tearDown = () => {
 
     document.getElementById("theme-waves").remove()
+    document.getElementById("theme-waves-canvas").remove()
+    cancelAnimationFrame(animationId)
+    active = false
+
 
    
 

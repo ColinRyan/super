@@ -166,7 +166,13 @@ Resize
 }
 
 console.debug("p5", p5)
-const P5 =  new p5.default(start)
+let P5 
 
-export const tearDown = P5.tearDown
+export const setup = () => {
+  P5 =  new p5.default(start)
+
+}
+export const tearDown = () => {
+  P5.tearDown()
+}
 console.debug("P5", P5)

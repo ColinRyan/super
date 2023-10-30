@@ -112,7 +112,7 @@ body {
 }
 
 .hidden {
-    display:none;
+    display:none !important;
     opacity: 0;
 }
 
@@ -191,7 +191,18 @@ figure {
     margin: 0;
 }
 
+aside #users figure:first-of-type {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+}
+figcaption {
+    font-style: italic;
+    color: #555;
+}
+
 figure > ul {
+
     border-bottom: 1px solid #333;
     padding-bottom: 1rem;
 
@@ -199,6 +210,8 @@ figure > ul {
 }
 
 #users {
+
+    padding-top: 0.5rem;
     font-size: 32px;
     text-align: center;
 

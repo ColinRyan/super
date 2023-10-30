@@ -82,6 +82,15 @@ const state = {
     
 }
 
+const storedUser = JSON.parse(localStorage.getItem('user'))
+
+if (storedUser) {
+  state.me = storedUser
+  state.theme.name = storedUser.theme
+  
+
+}
+
 
 window.state = state
 window.main = state.el.main
@@ -170,6 +179,13 @@ const setTheme = () => {
 
   
     if (state.theme.name === Themes.minimalist) {
+      if (state.theme.tearDown) {
+        state.theme.tearDown()
+        state.theme.tearDown = null
+
+
+      }
+
       return
     }
 
@@ -177,7 +193,17 @@ const setTheme = () => {
     if (state.theme.name === Themes.migration) {
         import('./themes/migration').then((obj) => {
             console.debug("obj", obj)
+            if (state.theme.tearDown) {
+              state.theme.tearDown()
+              state.theme.tearDown = null
+
+              
+            
+            }
+            
             state.theme.tearDown = obj.tearDown
+            obj.setup()
+
         }).catch((err) => {
             console.error(err)
         });
@@ -186,14 +212,22 @@ const setTheme = () => {
     if (state.theme.name === Themes.waves) {
         import('./themes/waves').then((obj) => {
             console.debug("obj", obj)
+            if (state.theme.tearDown) {
+              state.theme.tearDown()
+              state.theme.tearDown = null
+
+
+
+            }
+
             state.theme.tearDown = obj.tearDown
+            obj.setup()
         }).catch((err) => {
             console.error(err)
         });
     }
 }
 
-setTheme()
 
 const shuffle = (array) => {
   let currentIndex = array.length,  randomIndex;
@@ -416,6 +450,8 @@ peer.on('open', (id) => {
 
     if (hostId) {
         // You aren't the host
+
+        document.getElementById('share').classList.add("hidden")
         settingsButton.addEventListener('click', (event) => {
 
 
@@ -501,6 +537,9 @@ peer.on('open', (id) => {
       if (user) {
           state.users[user.name] = { voted: false, details: user }
           state.me = user
+          state.theme.name = user.theme
+          setTheme()
+
           listPlayers()
           console.debug("main", main)
           main.children["host-loading"].classList.toggle("hidden")
@@ -759,6 +798,8 @@ peer.on('open', (id) => {
     }
 
 
+
+  setTheme()
 
 
 })
