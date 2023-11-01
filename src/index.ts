@@ -248,26 +248,52 @@ const shuffle = (array) => {
 
   return array;
 }
-const showResults = (votes, average) => {
+const showResults = (type="dev", votes, average) => {
+    if (votes.length === 0) {
+      return
+      
+    
+    }
+  
     const main = state.el.main
     const game = main.children[state.game.type]
     const results = game.children.results
    
+    const item = document.createElement("div")
+  item.append(`
+    ${type} average: ${average.toFixed(2)}
+     ${type}  votes: ${shuffle(votes)}
+`)
 
-    results.append(`average: ${average.toFixed(2)}`)
-    results.append(`  votes: ${shuffle(votes)}`)
+  results.append(item)
 
 
 }
 
 const revealVotes =  () => {
-    const votes = pipe(
+
+    const qcVotes = pipe(
 
         filter((user) => {
             return user.vote !== null
         }),
         filter((user) => {
-          return user.details.category !== 'spectator'
+          return user.details.category === 'qc'
+        }),
+
+        map((user) => {
+            return user.vote
+        })
+
+   )(values(state.users))
+
+    const devVotes = pipe(
+
+        filter((user) => {
+            return user.vote !== null
+        }),
+        filter((user) => {
+          return user.details.category === 'dev' || user.details.category === 'host'
         }),
 
         map((user) => {
@@ -275,16 +301,23 @@ const revealVotes =  () => {
         })
    )(values(state.users))
 
-    console.debug("votes", votes)
-    const average = sum(votes)/votes.length 
+    console.debug("votes", devVotes)
+    const devAverage = sum(devVotes)/devVotes.length 
+  const qcAverage = sum(qcVotes)/qcVotes.length
 
-    showResults(votes, average)
+
+    showResults("dev", devVotes, devAverage)
+    showResults("qc", qcVotes, qcAverage)
+
     forEach((conn) => {
         console.debug("send user list to all players")
         console.debug("conn", conn)
         conn.send({action: 'show_results', payload: {
-            votes,
-            average
+            votes: devVotes,
+            average: devAverage,
+            qcVotes: qcVotes,
+            qcAverage: qcAverage,
+
         }})
     }, values(state.connections))
 
@@ -754,7 +787,9 @@ peer.on('open', (id) => {
 
                     case "show_results":
 
-                        showResults(payload.votes, payload.average)
+                        showResults("dev", payload.votes, payload.average)
+                        showResults("qc", payload.qcVotes, payload.qcAverage)
+
                         break
 
 
