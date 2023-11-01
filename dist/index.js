@@ -57978,34 +57978,56 @@
     }
     return array;
   };
-  var showResults = (votes, average) => {
+  var showResults = (type3 = "dev", votes, average) => {
+    if (votes.length === 0) {
+      return;
+    }
     const main = state.el.main;
     const game = main.children[state.game.type];
     const results = game.children.results;
-    results.append(`average: ${average.toFixed(2)}`);
-    results.append(`  votes: ${shuffle(votes)}`);
+    const item = document.createElement("div");
+    item.append(`
+    ${type3} average: ${average.toFixed(2)}
+     ${type3}  votes: ${shuffle(votes)}
+`);
+    results.append(item);
   };
   var revealVotes = () => {
-    const votes = pipe(
+    const qcVotes = pipe(
       filter_default((user) => {
         return user.vote !== null;
       }),
       filter_default((user) => {
-        return user.details.category !== "spectator";
+        return user.details.category === "qc";
       }),
       map_default((user) => {
         return user.vote;
       })
     )(values_default(state.users));
-    console.debug("votes", votes);
-    const average = sum_default(votes) / votes.length;
-    showResults(votes, average);
+    const devVotes = pipe(
+      filter_default((user) => {
+        return user.vote !== null;
+      }),
+      filter_default((user) => {
+        return user.details.category === "dev" || user.details.category === "host";
+      }),
+      map_default((user) => {
+        return user.vote;
+      })
+    )(values_default(state.users));
+    console.debug("votes", devVotes);
+    const devAverage = sum_default(devVotes) / devVotes.length;
+    const qcAverage = sum_default(qcVotes) / qcVotes.length;
+    showResults("dev", devVotes, devAverage);
+    showResults("qc", qcVotes, qcAverage);
     forEach_default((conn) => {
       console.debug("send user list to all players");
       console.debug("conn", conn);
       conn.send({ action: "show_results", payload: {
-        votes,
-        average
+        votes: devVotes,
+        average: devAverage,
+        qcVotes,
+        qcAverage
       } });
     }, values_default(state.connections));
     state.game.mode = "reveal" /* reveal */;
@@ -58315,7 +58337,8 @@
               listPlayers();
               break;
             case "show_results":
-              showResults(payload.votes, payload.average);
+              showResults("dev", payload.votes, payload.average);
+              showResults("qc", payload.qcVotes, payload.qcAverage);
               break;
             case "restart_game":
               state.me = omit_default(["votes", "vote"], state.me);
