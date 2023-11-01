@@ -25,6 +25,7 @@ enum Themes {
     waves = 'Waves',
 
 
+
 }
 
 enum GameTypes {
@@ -188,6 +189,7 @@ const setTheme = () => {
 
       return
     }
+
 
    
     if (state.theme.name === Themes.migration) {

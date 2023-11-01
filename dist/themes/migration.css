@@ -10,6 +10,24 @@ aside > div {
 
 }
 
+
+#settings-button {
+    background: rgba(3,3,3,.1);
+    color: white;
+    transition: background 0.5s;
+
+}
+
+#settings-button:hover {
+    background: rgba(150,150,150,.2);
+}
+
+#settings-button:active {
+    transition: background 1s, font-weight 1s;
+
+}
+
+
 #share {
     border-bottom: 1px solid #333;
 }
