@@ -142,6 +142,21 @@ const defaultHostData = {
 const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
 
 if (storedUser) {
+
+  if (storedUser.category === "host") {
+    storedUser.category = "dev";
+    storedUser.host = true;
+
+
+  }
+
+  if (storedUser.host === undefined) {
+    storedUser.host = false;
+
+
+  }
+
+
   state.me = storedUser;
   state.theme.name = storedUser.theme;
 }
