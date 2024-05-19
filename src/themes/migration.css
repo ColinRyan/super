@@ -1,0 +1,156 @@
+aside {
+    box-shadow: 2px 2px 27px -2px green;
+    backdrop-filter: blur(5px);
+    animation: slideIn 2s;
+
+}
+
+aside > div {
+    animation: fadeIn2 2s;
+
+}
+
+#share {
+    border-bottom: 1px solid #333;
+}
+
+#share-copy {
+    background: rgba(3,3,3,.1);
+    color: white;
+    transition: background 0.5s;
+
+}
+
+#share-copy:hover {
+    background: rgba(150,150,150,.2);
+}
+
+#share-copy:active {
+    transition: background 1s, font-weight 1s;
+
+}
+
+
+#settings {
+    
+    border-bottom: 1px solid #333;
+
+}
+
+
+#settings-button {
+    background: rgba(3,3,3,.1);
+    color: white;
+    transition: background 0.5s;
+
+}
+
+#settings-button:hover {
+    background: rgba(150,150,150,.2);
+}
+
+#settings-button:active {
+    transition: background 1s, font-weight 1s;
+
+}
+
+
+section {
+
+    backdrop-filter: blur(5px);
+    box-shadow: 2px 2px 27px -2px green;
+    animation: fadeIn 3s;
+
+
+
+}
+
+input[type="button"].option {
+    height: 5rem;
+    border: none;
+    border-radius: 10px;
+    margin: 1rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+
+}
+
+input[type="button"].option:hover  {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
+input[type="button"].option:focus  {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    padding-top: 7px;
+
+    box-shadow: 1px 3px 8px 1px green;
+
+    color: white;
+}
+
+
+input#storypointing-reveal {
+    width: calc(100% - 2rem);
+    height: 3rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+    border: none;
+    border-radius: 10px;
+}
+
+input#storypointing-reveal:hover {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
+input#storypointing-restart {
+    width: calc(100% - 2rem);
+    height: 3rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+    border: none;
+    border-radius: 10px;
+}
+
+input#storypointing-restart:hover {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+}
+
+dialog {
+    color: white;
+    box-shadow: 2px 2px 27px -2px green;
+
+}
+dialog > form > div > button   {
+    width: 100%;
+    margin-top: 1rem;
+    height: 2rem;
+    font-size: 20px;
+    transition: background 1s, color 1s;
+    box-shadow: 1px 3px 8px 1px green;
+    background: rgba(255,255,255,.7);
+    border: none;
+    border-radius: 10px;
+
+}
+
+dialog > form > div > button:hover   {
+    background: rgba(150,150,150,.2);
+    cursor: pointer;
+    color: white;
+
+
+}
+

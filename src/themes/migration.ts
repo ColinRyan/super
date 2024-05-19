@@ -1,5 +1,4 @@
-import * as p5 from 'p5'
-
+const p5 = import('p5')
 /*--------------------
 Vars
 --------------------*/
@@ -169,10 +168,22 @@ console.debug("p5", p5)
 let P5 
 
 export const setup = () => {
-  P5 =  new p5.default(start)
+  if (p5.default) {
+    P5 =  new p5.default(start)
+
+    
+  
+  }
+  
 
 }
 export const tearDown = () => {
-  P5.tearDown()
+  if (P5) {
+    P5.tearDown()
+
+    
+  
+  }
+  
 }
 console.debug("P5", P5)

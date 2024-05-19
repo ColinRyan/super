@@ -1,5 +1,5 @@
-import chroma from 'chroma-js'
-import * as THREE from 'three'
+const chroma = await import('chroma-js')
+const THREE = await import('three')
 
 let active = false
 let animationId = null
@@ -30,7 +30,8 @@ const App = () =>{
 
     const canvas = document.createElement("canvas")
     canvas.setAttribute("id", "theme-waves-canvas")
-    document.body.appendChild(canvas)
+    const loaded = document.getElementById("loaded")
+    loaded.appendChild(canvas)
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     camera = new THREE.PerspectiveCamera();
 
@@ -136,23 +137,7 @@ const App = () =>{
   }
 
 
-  function disposeScene() {
-    for (let i=0; i<scene.children.length; i++) {
-      const mesh = scene.children[i];
-      scene.remove(mesh);
-      mesh.geometry.dispose();
-      mesh.material.dispose();
-    }
-    scene.dispose();
-  }
 
-  function randomCScale() {
-    const colors = [], n = 2 + Math.floor(rnd(0, 4));
-    for (let i = 0; i < n; i++) {
-      colors.push(chroma.random());
-    }
-    return chroma.scale(colors).mode('lch');
-  }
 
   function animate(t) {
     if (active) {
