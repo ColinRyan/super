@@ -1,6 +1,6 @@
 // # Imports
 
-const confetti = import('canvas-confetti')
+import confetti from 'canvas-confetti'
 import './style.css'
 import {
   pipe,
