@@ -722,7 +722,15 @@ peer.on("open", (id) => {
       localStorage.getItem("host") ??
         JSON.stringify("{}")
     );
+    // Fix a data bug
     if (user.name !== undefined) {
+      if (user.category === "host") {
+        user.category = "dev"
+        user.host = true
+        
+      
+      }
+      
       state.users[user.name] = { ...user, voted: false };
       state.me = user;
       state.theme.name = user.theme;
@@ -871,6 +879,7 @@ peer.on("open", (id) => {
 
             localStorage.setItem("user", JSON.stringify(user));
 
+
             console.debug("userInfo", userInfo);
 
             console.debug("user", user);
@@ -902,6 +911,13 @@ peer.on("open", (id) => {
       if (userDialog && userDialog instanceof HTMLDialogElement &&  typeof userDialog.showModal === "function") {
         const user = JSON.parse(localStorage.getItem("user") ||  "{}");
         if (user.name !== undefined) {
+          // Fix a data related bug
+          if (user.host === undefined) {
+            user.host = false
+            
+          
+          }
+          
           conn.send({ action: "add_user", payload: user });
           state.me = user;
           state.theme.name = user.theme;
