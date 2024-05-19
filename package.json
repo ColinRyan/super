@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "vite build",
+    "build": "vite build --outDir docs",
     "preview": "bunx --bun vite preview"
   },
   "devDependencies": {
