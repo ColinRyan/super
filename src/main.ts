@@ -418,17 +418,16 @@ const listPlayers = () => {
           const leftSpan = document.createElement("span");
           const rightSpan = document.createElement("span");
 
-          leftSpan.innerText = `${user.name}`;
+          leftSpan.innerText = `${user.name} ${user.host ? "♔" : ""}`;
 
           li.appendChild(leftSpan);
+
 
           if (user.category !== "spectator") {
             const check = document.createElement("input");
             check.type = "checkbox";
             if (user.voted) {
               check.checked = true;
-              
-            
             }
             
             check.onclick = (e) => {
@@ -437,6 +436,7 @@ const listPlayers = () => {
 
             }
             rightSpan.appendChild(check);
+            
             li.appendChild(rightSpan);
           }
 

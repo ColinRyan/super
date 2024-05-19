@@ -5,6 +5,7 @@
 :root {
     --splash-animation-duration-in: 125ms;
     --splash-animation-duration-out: 250ms;
+    --aside-width: 19vw;
 
 }
 
@@ -112,7 +113,7 @@ aside {
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 20vw;
+    width: var(--aside-width);
     z-index: 2;
     gap: 1rem;
     border-right: 2px solid white;
@@ -135,7 +136,8 @@ aside {
     font-size: 26px;
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 #share-copy:hover {
@@ -238,11 +240,11 @@ main {
 
 @-webkit-keyframes slideIn {
     from { width: 0; }
-    to { width: 20vw; }
+    to { width: var(--aside-width); }
 }
 @keyframes slideIn {
     from { width: 0; }
-    to { width: 20vw; }
+    to { width: var(--aside-width); }
 }
 
 
@@ -320,8 +322,9 @@ figure > ul {
 #users {
 
     padding-top: 0.5rem;
+    padding-left: 1rem;
     font-size: 32px;
-    text-align: center;
+    text-align: left;
 
 }
 
